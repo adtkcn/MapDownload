@@ -1,0 +1,59 @@
+{
+  "name": "map-download",
+  "description": "高德地图、百度地图（包括百度自定义地图）、腾讯地图、OpenStreetMap、CartoDb、ArcGIS在线地图、天地图、MapBox的下载",
+  "author": "Hxy1992<https://github.com/Hxy1992>",
+  "repository": "https://github.com/Hxy1992/MapDownload",
+  "version": "v1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=v16.13",
+    "npm": ">=8.1"
+  },
+  "main": "packages/main/dist/index.cjs",
+  "scripts": {
+    "build": "node --max_old_space_size=8192 scripts/build.js",
+    "precompile": "cross-env MODE=production npm run build",
+    "compile": "electron-builder build --config .electron-builder.config.js --dir --config.asar=false",
+    "pretest": "npm run build",
+
+    "watch": "node scripts/watch.js",
+    "lint": "eslint . --ext js,ts,vue",
+    "dev": "npm run watch"
+  },
+  "browserslist": [
+    "Chrome 96"
+  ],
+  "lint-staged": {
+    "*.{js,ts,vue}": "eslint --cache --fix"
+  },
+  "devDependencies": {
+    "@vicons/ionicons5": "^0.12.0",
+    "@vitejs/plugin-vue": "1.10.0",
+    "cross-env": "7.0.3",
+    "electron": "16.0.1",
+    "electron-builder": "22.14.5",
+    "electron-devtools-installer": "3.2.0",
+    "eslint": "8.3.0",
+    "eslint-plugin-vue": "8.1.1",
+    "naive-ui": "^2.28.0",
+
+    "sass": "^1.45.0",
+    "vfonts": "^0.0.3",
+    "vite": "2.6.14"
+  },
+  "dependencies": {
+    "@turf/boolean-contains": "^6.5.0",
+    "@turf/boolean-crosses": "^6.5.0",
+    "@turf/boolean-disjoint": "^6.5.0",
+    "@turf/helpers": "^6.5.0",
+    "@turf/intersect": "^6.5.0",
+    "electron-updater": "4.6.2",
+    "fs-extra": "^10.0.0",
+    "maptalks": "^1.0.0-rc.33",
+    "marked": "^4.0.8",
+    "sharp": "^0.29.3",
+    "superagent": "^6.1.0",
+    "vue": "3.2.22",
+    "vue-router": "4.0.12"
+  }
+}
