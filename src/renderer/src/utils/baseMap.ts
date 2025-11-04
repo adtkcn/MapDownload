@@ -6,6 +6,7 @@ import type { CommonProjectionType } from 'maptalks/src/geo/projection'
 
 import TileLayerCollection from './TileLayerCollection/TileLayerCollection'
 import { defaultMap } from './layerList'
+import type { BaseLayerType } from './layerList'
 
 // import booleanContains from '@turf/boolean-contains'
 // import booleanCrosses from '@turf/boolean-crosses';
@@ -47,14 +48,14 @@ export default class baseMap {
     return this.map
   }
   // 显示瓦片网格
-  showTileGrid(val) {
+  showTileGrid(bool: boolean) {
     const baseLayer = this.map.getBaseLayer()
-    baseLayer.config({ debug: val })
+    baseLayer.config({ debug: bool })
     baseLayer.hide()
     baseLayer.show()
   }
 
-  switchBaseLayer(param) {
+  switchBaseLayer(param: BaseLayerType) {
     const methodName = 'get' + param.parent + 'TileLayer'
     const style = param.layer.value
     const baseLayer = TileLayerCollection[methodName](param.parent + '-' + style, {
@@ -119,13 +120,13 @@ export default class baseMap {
   }
   // 获取下载范围
   getDownloadExtent() {
-    if (!this._vectorLayer) return null
+    // if (!this._vectorLayer) return null
     return this._vectorLayer.getExtent()
   }
 
   // 获取瓦片图层参数
   getBaseMapConfig(): {
-    config: Array<MaptalksType.Layer> | MaptalksType.Layer
+    // config: Array<MaptalksType.Layer> | MaptalksType.Layer
     projection: CommonProjectionType
     tileLayer: Array<MaptalksType.Layer> | MaptalksType.Layer
     maxZoom: number
@@ -135,9 +136,9 @@ export default class baseMap {
     if (baseMap instanceof maptalks.GroupTileLayer) {
       const layers = baseMap?.getLayers?.() || []
       return {
-        config: layers.map((temp) => {
-          return temp.config()
-        }) as Array<MaptalksType.Layer>,
+        // config: layers.map((temp) => {
+        //   return temp.config()
+        // }) as Array<MaptalksType.Layer>,
         projection: baseMap.getProjection(),
         tileLayer: layers,
         maxZoom: baseMap.getMaxZoom(),
@@ -145,7 +146,7 @@ export default class baseMap {
       }
     } else {
       return {
-        config: baseMap.config() as MaptalksType.Layer,
+        // config: baseMap.config() as MaptalksType.Layer,
         projection: baseMap.getProjection(),
         tileLayer: baseMap,
         maxZoom: baseMap.getMaxZoom(),

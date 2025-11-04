@@ -69,7 +69,7 @@ import {
   SettingsOutline,
   SquareOutline
 } from '@vicons/ionicons5'
-
+import type { BaseLayerType } from '../utils/layerList'
 // 设置全局消息通知
 defineExpose({
   name: 'HomeMain'
@@ -80,7 +80,7 @@ const $message = useMessage()
 const $notification = useNotification()
 
 // 地图实例
-let mapInstance: baseMap | null = null
+let mapInstance: baseMap
 
 // 响应式数据
 const isDrawing = ref(false)
@@ -92,7 +92,7 @@ const saveLayers = ref([])
 const limitMinZoom = ref(1)
 const limitMaxZoom = ref(18)
 const isBaidu = ref(false)
-let _currentLayer: any = null
+let _currentLayer: BaseLayerType | null = null
 let _drawStartInfo: any = null
 
 // 生命周期钩子
@@ -102,7 +102,7 @@ onMounted(() => {
 })
 
 // 方法
-function chooseLayers(data: any) {
+function chooseLayers(data: BaseLayerType) {
   _currentLayer = data
   mapInstance?.switchBaseLayer(data)
 }
@@ -149,7 +149,7 @@ function showSave(showMsg = true) {
     if (showMsg) $message.warning('获取下载范围错误，请重新绘制下载范围')
     return false
   }
-  const { tileLayer, maxZoom, minZoom, projection } = mapInstance?.getBaseMapConfig()
+  const { tileLayer, maxZoom, minZoom, projection } = mapInstance.getBaseMapConfig()
   saveLayers.value = tileLayer
   limitMaxZoom.value = maxZoom
   limitMinZoom.value = minZoom
@@ -163,7 +163,7 @@ function showSave(showMsg = true) {
 function save(val: saveParam) {
   saveVisible.value = false
   nextTick(() => {
-    const mapConfig = mapInstance?.getBaseMapConfig()
+    const mapConfig = mapInstance.getBaseMapConfig()
     if (mapConfig) {
       val.mapConfig = mapConfig
       new FileSave(val)
@@ -190,7 +190,7 @@ function showSet(val: boolean) {
   }
 }
 
-function chooseArea(data: any) {
+function chooseArea(data: { option: any; geojson: any }) {
   // 结束绘制
   isDrawing.value = false
   mapInstance?.endDraw()
@@ -204,8 +204,8 @@ function chooseArea(data: any) {
   mapInstance?.fitExtent()
 }
 
-function showGrid(val: any) {
-  mapInstance?.showTileGrid(val)
+function showGrid(bool: boolean) {
+  mapInstance?.showTileGrid(bool)
 }
 </script>
 

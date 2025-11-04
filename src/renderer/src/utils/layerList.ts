@@ -1,7 +1,38 @@
 // 地图列表
 import { uuid } from './random'
 const BaiduConstomSubdomains = [0, 1, 2] // 百度自定义瓦片子域名
-const mapList = [
+
+export type MapType =
+  | 'Amap'
+  | 'Baidu'
+  | 'Google'
+  | 'Mapbox'
+  | 'Tencent'
+  | 'Osm'
+  | 'CartoDb'
+  | 'Geoq'
+  | 'Tdt'
+export type MapLayerType = {
+  label: string
+  value: string
+  prejection: string
+  exteral: {
+    attribution: string
+    subdomains?: number[] | string[]
+  }
+}
+export type MapListType = {
+  label: string
+  value: MapType
+  uuid?: string
+  children: MapLayerType[]
+}
+export type BaseLayerType = {
+  parent: MapType
+  layer: MapLayerType
+}
+
+const mapList: MapListType[] = [
   {
     label: '高德',
     value: 'Amap',
@@ -10,6 +41,9 @@ const mapList = [
         label: '电子地图',
         value: 'Normal',
         prejection: 'EPSG:3857',
+        // layer: (tdtKey) => [
+        //   'https://t0.tianditu.gov.cn/DataServer?T=vec_w&X={x}&Y={y}&L={z}&tk=' + tdtKey
+        // ],
         exteral: {
           attribution: '高德-电子地图'
         }
@@ -445,11 +479,11 @@ const mapList = [
   }
 ]
 
-export function defaultMap() {
+export function defaultMap(): BaseLayerType {
   return { parent: mapList[0].value, layer: mapList[0].children[0] }
 }
 
-export function getMapList() {
+export function getMapList(): MapListType[] {
   const list = [...mapList]
   const setUid = function (item) {
     item.uuid = uuid()

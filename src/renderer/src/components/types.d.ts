@@ -1,8 +1,8 @@
 import type * as MaptalksType from 'maptalks/src/index.ts'
 type BaseMapConfig = {
-  config: Array<MaptalksType.Layer> | MaptalksType.Layer
+  // config: Array<MaptalksType.Layer> | MaptalksType.Layer
   projection: MaptalksType.Projection
-  tileLayer: Array<MaptalksType.TileLayer> | MaptalksType.TileLayer
+  tileLayer: Array<MaptalksType.Layer> | MaptalksType.Layer
   maxZoom: number
   minZoom: number
 }

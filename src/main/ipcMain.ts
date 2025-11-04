@@ -21,6 +21,8 @@ ipcMain.handle('show-dialog', async () => {
 let lastDirName = ''
 function createDir(file: string) {
   if (lastDirName === path.dirname(file)) {
+    // console.log('免创建目录')
+
     return
   }
   const dir = path.dirname(file)
@@ -30,7 +32,7 @@ function createDir(file: string) {
 
 // 下载事件
 export function ipcHandle(win: BrowserWindow) {
-  const queueList = new QueueList(20, function (args: saveImageArgs) {
+  const queueList = new QueueList(50, function (args: saveImageArgs) {
     createDir(args.savePath)
 
     if (args.imageBuffer) {
@@ -43,19 +45,24 @@ export function ipcHandle(win: BrowserWindow) {
         .composite([{ input: dataBuffer, gravity: 'centre', blend: 'dest-in' }])
         .toFile(args.savePath)
       s.then(() => {
-        queueList.success++
-        queueList.subRequestNum()
+        queueList.ok()
         win.webContents.send('imageDownloadDone', {
           count: queueList.count, //总数
           error: queueList.error, //错误总数
           success: queueList.success //成功总数
         })
       }).catch(() => {
-        queueList.error++
-        queueList.subRequestNum()
+        queueList.err()
       })
     } else {
       new Promise((resolve, reject) => {
+        // 检查本地是否存在文件
+        if (fs.existsSync(args.savePath)) {
+          // console.log('文件已存在免下载')
+          queueList.exist()
+          resolve(null)
+          return
+        }
         requestHandle(request.get(args.url)).end(function (err, res) {
           if (err) {
             reject(err)
@@ -72,32 +79,33 @@ export function ipcHandle(win: BrowserWindow) {
         })
       })
         .then(() => {
-          queueList.success++
-          queueList.subRequestNum()
+          // queueList.success++
+          queueList.ok()
           win.webContents.send('imageDownloadDone', {
             count: queueList.count, //总数
             error: queueList.error, //错误总数
             success: queueList.success, //成功总数
+            existNum: queueList.existNum, //已存在文件数
             requestNum: queueList.requestNum
           })
         })
         .catch(() => {
-          queueList.subRequestNum()
+          queueList.err()
 
           if (args.retry > 0) {
             console.log('加入重试', args.url)
             args.retry = args.retry - 1
-            queueList.list.push(args)
+            queueList.addTask(args)
           } else {
             console.log('下载失败', args.url)
-            queueList.error++
-            win.webContents.send('imageDownloadDone', {
-              count: queueList.count, //总数
-              error: queueList.error, //错误总数
-              success: queueList.success, //成功总数
-              requestNum: queueList.requestNum
-            })
           }
+          win.webContents.send('imageDownloadDone', {
+            count: queueList.count, //总数
+            error: queueList.error, //错误总数
+            success: queueList.success, //成功总数
+            existNum: queueList.existNum, //已存在文件数
+            requestNum: queueList.requestNum
+          })
         })
     }
   })
@@ -106,10 +114,7 @@ export function ipcHandle(win: BrowserWindow) {
   ipcMain.on('save-image', (_event, args: saveImageArgs) => {
     if (queueList.count === queueList.success + queueList.error) {
       // 任务完成后，新任务清理统计
-      queueList.count = 0
-      queueList.error = 0
-      queueList.success = 0
-      queueList.requestNum = 0
+      queueList.reset()
     }
     queueList.addTask({
       ...args,

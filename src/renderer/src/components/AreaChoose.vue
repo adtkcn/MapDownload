@@ -1,7 +1,7 @@
 <template>
   <n-popover ref="popover" trigger="click" width="200">
     <template #trigger>
-      <span style="cursor: pointer; color: #2080f0" title="选择下载区域" @click="handleIconClick">
+      <span style="cursor: pointer; color: #2080f0" title="选择下载区域">
         {{ chooseArea || '选择下载区域' }}
       </span>
     </template>
@@ -19,7 +19,7 @@
   </n-popover>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent, ref } from 'vue'
 import { getAreaList } from '@renderer/utils/areaList.js'
 export default defineComponent({
@@ -48,12 +48,6 @@ export default defineComponent({
         })
       }
     }
-  },
-  data() {
-    return {}
-  },
-  computed: {},
-  mounted() {},
-  methods: {}
+  }
 })
 </script>

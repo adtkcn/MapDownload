@@ -7,6 +7,7 @@ export class QueueList {
   count = 0 //总数
   error = 0 //错误总数
   success = 0 //成功总数
+  existNum = 0 //已存在文件数
   requestNum = 0
 
   /**
@@ -22,6 +23,7 @@ export class QueueList {
     if (this.list.length > 0 && this.runTask) {
       const task = this.getFirstTask()
       if (task) {
+        this.requestNum++
         this.runTask(task)
       }
       setImmediate(() => {
@@ -37,15 +39,30 @@ export class QueueList {
     this.list.push(task)
     this.count++
   }
-  getFirstTask() {
+  private getFirstTask() {
     if (this.list.length && this.requestNum < this.taskNum) {
-      this.requestNum++
       return this.list.shift()
     } else {
       return null
     }
   }
-  subRequestNum() {
+  ok() {
     this.requestNum--
+    this.success++
+  }
+  err() {
+    this.requestNum--
+    this.error++
+  }
+  exist() {
+    // this.requestNum--
+    this.existNum++
+  }
+  reset() {
+    this.count = 0 //总数
+    this.error = 0 //错误总数
+    this.success = 0 //成功总数
+    this.existNum = 0 //已存在文件数
+    this.requestNum = 0
   }
 }

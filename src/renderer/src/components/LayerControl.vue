@@ -22,7 +22,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import { getMapList } from '@renderer/utils/layerList.js'
+import { getMapList } from '@renderer/utils/layerList'
 import { getKeys } from '@renderer/utils/mapKey.js'
 import { Layers } from '@vicons/ionicons5'
 import { useMessage } from 'naive-ui'

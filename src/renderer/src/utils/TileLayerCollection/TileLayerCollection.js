@@ -36,6 +36,7 @@ class TileLayerCollection {
   }
 
   static getAmapTileLayer(id, options = {}) {
+
     if (options.style === 'Satellite') {
       const baseLayers = []
       const baseLayer = new AmapTileLayer(Utils.uuid(), options)

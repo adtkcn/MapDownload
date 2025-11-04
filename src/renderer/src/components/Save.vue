@@ -1,6 +1,7 @@
 <template>
   <n-modal
     v-model:show="showModal"
+    draggable
     :show-icon="false"
     :on-mask-click="cancel"
     :on-esc="cancel"
@@ -65,7 +66,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent,toRaw } from 'vue'
+import { defineComponent, toRaw } from 'vue'
 import { useMessage } from 'naive-ui'
 
 export default defineComponent({
@@ -183,7 +184,7 @@ export default defineComponent({
 
         imageType: this.imageType
       }
-      console.log('param', param);
+      console.log('param', param)
 
       this.$emit('ok', param)
     }

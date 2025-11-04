@@ -6,9 +6,15 @@
         {{ count }}
       </span>
     </div>
+
     <div class="item">
       已下载:<span class="success">
         {{ success }}
+      </span>
+    </div>
+        <div class="item">
+      已存在:<span class="exist">
+        {{ existNum }}
       </span>
     </div>
     <div class="item">
@@ -35,6 +41,7 @@ export default defineComponent({
       hide: true,
       success: 0,
       error: 0, // 下载失败数
+      existNum: 0, // 已存在文件数
       percentage: 0, // 下载进度百分比
       count: 0, // 下载总数
       requestNum: 0 // 并发数
@@ -49,6 +56,7 @@ export default defineComponent({
       this.count = state.count
       this.success = state.success
       this.error = state.error
+      this.existNum = state.existNum
       this.requestNum = state.requestNum
       this.percentage = ((state.success + state.error) / state.count) * 100
     })

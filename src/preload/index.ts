@@ -3,7 +3,13 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 export const api = {
   imageDownloadDone: (
-    callback: (state: { count: number; error: number; success: number; requestNum: number }) => void
+    callback: (state: {
+      count: number
+      error: number
+      success: number
+      existNum: number
+      requestNum: number
+    }) => void
   ) => {
     ipcRenderer.on('imageDownloadDone', (_event: Electron.IpcRendererEvent, data) => callback(data))
   }
