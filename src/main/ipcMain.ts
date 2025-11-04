@@ -103,7 +103,7 @@ export function ipcHandle(win: BrowserWindow) {
   })
 
   // superagent & sharp 下载图片
-  ipcMain.on('save-image', (event, args: saveImageArgs) => {
+  ipcMain.on('save-image', (_event, args: saveImageArgs) => {
     if (queueList.count === queueList.success + queueList.error) {
       // 任务完成后，新任务清理统计
       queueList.count = 0
