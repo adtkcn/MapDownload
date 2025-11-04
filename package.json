@@ -1,59 +1,64 @@
 {
-  "name": "map-download",
-  "description": "高德地图、百度地图（包括百度自定义地图）、腾讯地图、OpenStreetMap、CartoDb、ArcGIS在线地图、天地图、MapBox的下载",
-  "author": "Hxy1992<https://github.com/Hxy1992>",
-  "repository": "https://github.com/Hxy1992/MapDownload",
-  "version": "v1.0.0",
-  "private": true,
-  "engines": {
-    "node": ">=v16.13",
-    "npm": ">=8.1"
-  },
-  "main": "packages/main/dist/index.cjs",
+  "name": "mapdownload2",
+  "version": "1.0.0",
+  "description": "An Electron application with Vue and TypeScript",
+  "main": "./out/main/index.js",
+  "author": "example.com",
+  "homepage": "https://electron-vite.org",
+
+
   "scripts": {
-    "build": "node --max_old_space_size=8192 scripts/build.js",
-    "precompile": "cross-env MODE=production npm run build",
-    "compile": "electron-builder build --config .electron-builder.config.js --dir --config.asar=false",
-    "pretest": "npm run build",
-
-    "watch": "node scripts/watch.js",
-    "lint": "eslint . --ext js,ts,vue",
-    "dev": "npm run watch"
-  },
-  "browserslist": [
-    "Chrome 96"
-  ],
-  "lint-staged": {
-    "*.{js,ts,vue}": "eslint --cache --fix"
-  },
-  "devDependencies": {
-    "@vicons/ionicons5": "^0.12.0",
-    "@vitejs/plugin-vue": "1.10.0",
-    "cross-env": "7.0.3",
-    "electron": "16.0.1",
-    "electron-builder": "22.14.5",
-    "electron-devtools-installer": "3.2.0",
-    "eslint": "8.3.0",
-    "eslint-plugin-vue": "8.1.1",
-    "naive-ui": "^2.28.0",
-
-    "sass": "^1.45.0",
-    "vfonts": "^0.0.3",
-    "vite": "2.6.14"
+    "format": "prettier --write .",
+    "lint": "eslint --cache .",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
+    "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json --composite false",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "start": "electron-vite preview",
+    "dev": "electron-vite dev",
+    "build": "npm run typecheck && electron-vite build",
+    "postinstall": "electron-builder install-app-deps",
+    "build:unpack": "npm run build && electron-builder --dir",
+    "build:win": "npm run build && electron-builder --win",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:linux": "npm run build && electron-builder --linux"
   },
   "dependencies": {
+    "@electron-toolkit/preload": "^3.0.2",
+    "@electron-toolkit/utils": "^4.0.0",
+    "electron-updater": "^6.3.9",
     "@turf/boolean-contains": "^6.5.0",
     "@turf/boolean-crosses": "^6.5.0",
     "@turf/boolean-disjoint": "^6.5.0",
     "@turf/helpers": "^6.5.0",
     "@turf/intersect": "^6.5.0",
-    "electron-updater": "4.6.2",
-    "fs-extra": "^10.0.0",
-    "maptalks": "^1.0.0-rc.33",
-    "marked": "^4.0.8",
-    "sharp": "^0.29.3",
-    "superagent": "^6.1.0",
-    "vue": "3.2.22",
-    "vue-router": "4.0.12"
+    "axios": "^1.7.2",
+    "fs-extra": "^11.3.2",
+    "maptalks": "^1.5.0",
+    "marked": "^13.0.0",
+    "sharp": "^0.34.4",
+    "superagent": "^9.0.2",
+    "vue-router": "4.6.3"
+  },
+  "devDependencies": {
+    "@electron-toolkit/eslint-config-prettier": "3.0.0",
+    "@electron-toolkit/eslint-config-ts": "^3.1.0",
+    "@electron-toolkit/tsconfig": "^2.0.0",
+    "@types/node": "^22.18.6",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "electron": "^38.1.2",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^4.0.1",
+    "eslint": "^9.36.0",
+    "eslint-plugin-vue": "^10.4.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.6",
+    "vue": "^3.5.21",
+    "vue-eslint-parser": "^10.2.0",
+    "vue-tsc": "^3.0.7",
+    "@vicons/ionicons5": "^0.12.0",
+    "naive-ui": "^2.43.1",
+    "sass": "^1.77.6",
+    "vfonts": "^0.0.3"
   }
 }
