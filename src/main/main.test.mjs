@@ -1,3 +1,8 @@
+let url = 'https://rt3.map.gtimg.com/tile?z=8&x=204&y=157&type=vector&styleid=3&version=117'
+import request from 'superagent'
+// import { requestHandle } from './ipHandle.ts'
+import fs from 'fs'
+
 // const https = require('https');
 import https from 'https'
 // 伪造IP
@@ -62,3 +67,25 @@ export function requestHandle(request) {
   count++
   return request
 }
+
+await new Promise((resolve, reject) => {
+  requestHandle(request.get(url))
+    .responseType('blob')
+    .end(function (err, res) {
+      if (err) {
+        reject(err)
+        return
+      }
+      console.log(res.body)
+
+      if (res) {
+        fs.writeFile('test.png', Buffer.from(res.body), (err) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve(res)
+          }
+        })
+      }
+    })
+})

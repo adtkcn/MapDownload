@@ -34,7 +34,12 @@ function createDir(file: string) {
 export function ipcHandle(win: BrowserWindow) {
   const queueList = new QueueList(50, function (args: saveImageArgs) {
     createDir(args.savePath)
-
+    // 检查本地是否存在文件
+    if (fs.existsSync(args.savePath)) {
+      queueList.exist()
+      sendImageDownloadDone()
+      return
+    }
     if (args.imageBuffer) {
       const base64Data = args.imageBuffer.replace(/^data:image\/\w+;base64,/, '')
       const dataBuffer = Buffer.from(base64Data, 'base64')
@@ -46,73 +51,67 @@ export function ipcHandle(win: BrowserWindow) {
         .toFile(args.savePath)
       s.then(() => {
         queueList.ok()
-        win.webContents.send('imageDownloadDone', {
-          count: queueList.count, //总数
-          error: queueList.error, //错误总数
-          success: queueList.success //成功总数
-        })
+        sendImageDownloadDone()
       }).catch(() => {
         queueList.err()
+        sendImageDownloadDone()
       })
     } else {
       new Promise((resolve, reject) => {
-        // 检查本地是否存在文件
-        if (fs.existsSync(args.savePath)) {
-          // console.log('文件已存在免下载')
-          queueList.exist()
-          resolve(null)
-          return
-        }
-        requestHandle(request.get(args.url)).end(function (err, res) {
-          if (err) {
-            reject(err)
-          }
-          if (res) {
-            fs.writeFile(args.savePath, Buffer.from(res.body), (err) => {
-              if (err) {
-                reject(err)
-              } else {
-                resolve(res)
+        requestHandle(request.get(args.url))
+          .responseType('blob')
+          .end(function (err, res) {
+            if (err) {
+              reject(err)
+              return
+            }
+            if (res) {
+              try {
+                fs.writeFile(args.savePath, Buffer.from(res.body), (err) => {
+                  if (err) {
+                    reject(err)
+                  } else {
+                    resolve(res)
+                  }
+                })
+              } catch (error) {
+                console.log(error)
+
+                reject(error)
               }
-            })
-          }
-        })
+            }
+          })
       })
         .then(() => {
           // queueList.success++
           queueList.ok()
-          win.webContents.send('imageDownloadDone', {
-            count: queueList.count, //总数
-            error: queueList.error, //错误总数
-            success: queueList.success, //成功总数
-            existNum: queueList.existNum, //已存在文件数
-            requestNum: queueList.requestNum
-          })
+          sendImageDownloadDone()
         })
         .catch(() => {
-          queueList.err()
-
           if (args.retry > 0) {
             console.log('加入重试', args.url)
-            args.retry = args.retry - 1
-            queueList.addTask(args)
+            queueList.retryTask(args)
           } else {
+            queueList.err()
             console.log('下载失败', args.url)
           }
-          win.webContents.send('imageDownloadDone', {
-            count: queueList.count, //总数
-            error: queueList.error, //错误总数
-            success: queueList.success, //成功总数
-            existNum: queueList.existNum, //已存在文件数
-            requestNum: queueList.requestNum
-          })
+          sendImageDownloadDone()
         })
     }
   })
 
+  function sendImageDownloadDone() {
+    win.webContents.send('imageDownloadDone', {
+      count: queueList.count, //总数
+      error: queueList.error, //错误总数
+      success: queueList.success, //成功总数
+      existNum: queueList.existNum, //已存在文件数
+      requestNum: queueList.requestNum
+    })
+  }
   // superagent & sharp 下载图片
   ipcMain.on('save-image', (_event, args: saveImageArgs) => {
-    if (queueList.count === queueList.success + queueList.error) {
+    if (queueList.count === queueList.success + queueList.error + queueList.existNum) {
       // 任务完成后，新任务清理统计
       queueList.reset()
     }
@@ -120,5 +119,19 @@ export function ipcHandle(win: BrowserWindow) {
       ...args,
       retry: 5
     })
+    queueList.start()
+  })
+  // 监听停止
+  ipcMain.on('stop-download', () => {
+    queueList.stop()
+    sendImageDownloadDone()
+  })
+  // 监听暂停
+  ipcMain.on('pause-download', () => {
+    queueList.pause()
+  })
+  // 监听继续
+  ipcMain.on('continue-download', () => {
+    queueList.continue()
   })
 }

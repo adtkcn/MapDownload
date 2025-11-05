@@ -70,6 +70,7 @@ import {
   SquareOutline
 } from '@vicons/ionicons5'
 import type { BaseLayerType } from '../utils/layerList'
+import type * as MaptalksType from 'maptalks/src/index.ts'
 // 设置全局消息通知
 defineExpose({
   name: 'HomeMain'
@@ -88,7 +89,7 @@ const saveVisible = ref(false)
 const downloadExtent = ref({})
 const helpVisible = ref(false)
 const setVisible = ref(false)
-const saveLayers = ref([])
+const saveLayers = ref<Array<MaptalksType.Layer>>([])
 const limitMinZoom = ref(1)
 const limitMaxZoom = ref(18)
 const isBaidu = ref(false)

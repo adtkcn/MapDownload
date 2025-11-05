@@ -3,7 +3,7 @@ import params from './../param'
 
 class MapboxTileLayer extends BaseTileLayer {
   constructor(id, options = {}) {
-    const style = options.style || 'light'
+    const style = options.style || 'Mapbox_light'
     options.urlTemplate = params().Mapbox[style].url
     super(id, options)
   }

@@ -58,7 +58,8 @@ export default class baseMap {
   switchBaseLayer(param: BaseLayerType) {
     const methodName = 'get' + param.parent + 'TileLayer'
     const style = param.layer.value
-    const baseLayer = TileLayerCollection[methodName](param.parent + '-' + style, {
+    const baseLayer = TileLayerCollection[methodName]({
+      parentName: param.parent,
       style: style,
       ...defaultTileOption,
       // subdomains: param.layer.subdomains,
@@ -126,19 +127,15 @@ export default class baseMap {
 
   // 获取瓦片图层参数
   getBaseMapConfig(): {
-    // config: Array<MaptalksType.Layer> | MaptalksType.Layer
     projection: CommonProjectionType
-    tileLayer: Array<MaptalksType.Layer> | MaptalksType.Layer
+    tileLayer: Array<MaptalksType.TileLayer>
     maxZoom: number
     minZoom: number
   } {
     const baseMap = this.map.getBaseLayer()
     if (baseMap instanceof maptalks.GroupTileLayer) {
-      const layers = baseMap?.getLayers?.() || []
+      const layers = (baseMap?.getLayers?.() || []) as Array<MaptalksType.TileLayer>
       return {
-        // config: layers.map((temp) => {
-        //   return temp.config()
-        // }) as Array<MaptalksType.Layer>,
         projection: baseMap.getProjection(),
         tileLayer: layers,
         maxZoom: baseMap.getMaxZoom(),
@@ -146,9 +143,8 @@ export default class baseMap {
       }
     } else {
       return {
-        // config: baseMap.config() as MaptalksType.Layer,
         projection: baseMap.getProjection(),
-        tileLayer: baseMap,
+        tileLayer: [baseMap] as Array<MaptalksType.TileLayer>,
         maxZoom: baseMap.getMaxZoom(),
         minZoom: baseMap.getMinZoom()
       }

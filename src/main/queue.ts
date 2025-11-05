@@ -1,6 +1,7 @@
 import { saveImageArgs } from './type'
 
 export class QueueList {
+  isRunning = false
   taskNum = 10
   runTask: (task: saveImageArgs) => void
   list: Array<saveImageArgs> = []
@@ -20,7 +21,7 @@ export class QueueList {
     this.run()
   }
   run() {
-    if (this.list.length > 0 && this.runTask) {
+    if (this.isRunning && this.list.length > 0) {
       const task = this.getFirstTask()
       if (task) {
         this.requestNum++
@@ -39,6 +40,16 @@ export class QueueList {
     this.list.push(task)
     this.count++
   }
+  retryTask(task: saveImageArgs) {
+    if (task.retry <= 0) {
+      return
+    }
+    if (this.isRunning) {
+      task.retry = task.retry - 1
+      this.requestNum--
+      this.addTask(task)
+    }
+  }
   private getFirstTask() {
     if (this.list.length && this.requestNum < this.taskNum) {
       return this.list.shift()
@@ -47,16 +58,22 @@ export class QueueList {
     }
   }
   ok() {
-    this.requestNum--
-    this.success++
+    if (this.isRunning) {
+      this.requestNum--
+      this.success++
+    }
   }
   err() {
-    this.requestNum--
-    this.error++
+    if (this.isRunning) {
+      this.requestNum--
+      this.error++
+    }
   }
   exist() {
-    // this.requestNum--
-    this.existNum++
+    if (this.isRunning) {
+      this.requestNum--
+      this.existNum++
+    }
   }
   reset() {
     this.count = 0 //总数
@@ -64,5 +81,22 @@ export class QueueList {
     this.success = 0 //成功总数
     this.existNum = 0 //已存在文件数
     this.requestNum = 0
+  }
+  stop() {
+    this.list = []
+    this.reset()
+  }
+  pause() {
+    this.isRunning = false
+  }
+  continue() {
+    if (!this.isRunning) {
+      this.isRunning = true
+    }
+  }
+  start() {
+    if (!this.isRunning) {
+      this.isRunning = true
+    }
   }
 }

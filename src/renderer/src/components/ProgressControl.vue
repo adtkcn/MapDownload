@@ -12,7 +12,7 @@
         {{ success }}
       </span>
     </div>
-        <div class="item">
+    <div class="item">
       已存在:<span class="exist">
         {{ existNum }}
       </span>
@@ -27,7 +27,10 @@
         {{ requestNum }}
       </span>
     </div>
-    <button @click="closeProgress">关闭</button>
+    <NButton @click="pause">暂停</NButton>
+    <NButton @click="stop">停止</NButton>
+    <NButton @click="continueDownload">继续</NButton>
+    <NButton @click="closeProgress">关闭</NButton>
   </div>
 </template>
 
@@ -64,6 +67,15 @@ export default defineComponent({
   methods: {
     closeProgress() {
       this.hide = true
+    },
+    pause() {
+      window.electron.ipcRenderer.send('pause-download')
+    },
+    stop() {
+      window.electron.ipcRenderer.send('stop-download')
+    },
+    continueDownload() {
+      window.electron.ipcRenderer.send('continue-download')
     }
   }
 })

@@ -3,7 +3,7 @@ import params from './../param'
 
 class BaiduTileLayer extends BaseTileLayer {
   constructor(id, options = {}) {
-    const style = options.style || 'Normal'
+    const style = options.style || 'Baidu_Normal'
     options.urlTemplate = params().Baidu[style].url
     super(id, options)
   }

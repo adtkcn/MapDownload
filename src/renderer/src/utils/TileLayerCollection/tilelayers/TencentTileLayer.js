@@ -3,7 +3,7 @@ import params from './../param'
 
 class TencentTileLayer extends BaseTileLayer {
   constructor(id, options = {}) {
-    const style = options.style || 'Normal'
+    const style = options.style || 'Tencent_Normal'
     options.urlTemplate = params().Tencent[style].url
     super(id, options)
   }

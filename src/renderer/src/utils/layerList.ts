@@ -1,6 +1,6 @@
 // 地图列表
 import { uuid } from './random'
-const BaiduConstomSubdomains = [0, 1, 2] // 百度自定义瓦片子域名
+// const BaiduConstomSubdomains = [0, 1, 2] // 百度自定义瓦片子域名
 
 export type MapType =
   | 'Amap'
@@ -39,30 +39,24 @@ const mapList: MapListType[] = [
     children: [
       {
         label: '电子地图',
-        value: 'Normal',
+        value: 'Amap_Normal',
         prejection: 'EPSG:3857',
-        // layer: (tdtKey) => [
-        //   'https://t0.tianditu.gov.cn/DataServer?T=vec_w&X={x}&Y={y}&L={z}&tk=' + tdtKey
-        // ],
         exteral: {
+          subdomains: [1, 3, 4],
           attribution: '高德-电子地图'
         }
       },
       {
         label: '卫星地图',
-        value: 'Satellite',
+        value: 'Amap_Satellite',
         prejection: 'EPSG:3857',
-        exteral: {
-          attribution: '高德-卫星地图'
-        }
+        exteral: { subdomains: [1, 3, 4], attribution: '高德-卫星地图' }
       },
       {
         label: '电子地图(英文)',
-        value: 'NormalEn',
+        value: 'Amap_NormalEn',
         prejection: 'EPSG:3857',
-        exteral: {
-          attribution: '高德-电子地图(英文)'
-        }
+        exteral: { subdomains: [1, 3, 4], attribution: '高德-电子地图(英文)' }
       }
     ]
   },
@@ -72,121 +66,121 @@ const mapList: MapListType[] = [
     children: [
       {
         label: '电子地图',
-        value: 'Normal',
+        value: 'Baidu_Normal',
         prejection: 'baidu',
         exteral: {
           subdomains: [0, 1, 2, 3],
           attribution: '百度-电子地图'
         }
-      },
-      {
-        label: '卫星地图',
-        value: 'Satellite',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: [0, 1, 2, 3],
-          attribution: '百度-卫星地图'
-        }
-      },
-      {
-        label: '午夜蓝',
-        value: 'midnight',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: BaiduConstomSubdomains,
-          attribution: '百度-自定义-午夜蓝'
-        }
-      },
-      {
-        label: '清新蓝',
-        value: 'light',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: BaiduConstomSubdomains,
-          attribution: '百度-自定义-清新蓝'
-        }
-      },
-      {
-        label: '黑夜',
-        value: 'dark',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: BaiduConstomSubdomains,
-          attribution: '百度-自定义-黑夜'
-        }
-      },
-      {
-        label: '红色警戒',
-        value: 'redalert',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: BaiduConstomSubdomains,
-          attribution: '百度-自定义-红色警戒'
-        }
-      },
-      {
-        label: '精简(仿google)',
-        value: 'googlelite',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: BaiduConstomSubdomains,
-          attribution: '百度-自定义-精简'
-        }
-      },
-      {
-        label: '自然绿',
-        value: 'grassgreen',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: BaiduConstomSubdomains,
-          attribution: '百度-自定义-自然绿'
-        }
-      },
-      {
-        label: '浪漫粉',
-        value: 'pink',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: BaiduConstomSubdomains,
-          attribution: '百度-自定义-浪漫粉'
-        }
-      },
-      {
-        label: '青春绿',
-        value: 'darkgreen',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: BaiduConstomSubdomains,
-          attribution: '百度-自定义-青春绿'
-        }
-      },
-      {
-        label: '清新蓝绿',
-        value: 'bluish',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: BaiduConstomSubdomains,
-          attribution: '百度-自定义-清新蓝绿'
-        }
-      },
-      {
-        label: '高端灰',
-        value: 'grayscale',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: BaiduConstomSubdomains,
-          attribution: '百度-自定义-高端灰'
-        }
-      },
-      {
-        label: '强边界',
-        value: 'hardedge',
-        prejection: 'baidu',
-        exteral: {
-          subdomains: BaiduConstomSubdomains,
-          attribution: '百度-自定义-强边界'
-        }
       }
+      // {
+      //   label: '卫星地图',
+      //   value: 'Baidu_Satellite',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: [0, 1, 2, 3],
+      //     attribution: '百度-卫星地图'
+      //   }
+      // },
+      // {
+      //   label: '午夜蓝',
+      //   value: 'Baidu_midnight',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: BaiduConstomSubdomains,
+      //     attribution: '百度-自定义-午夜蓝'
+      //   }
+      // },
+      // {
+      //   label: '清新蓝',
+      //   value: 'Baidu_light',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: BaiduConstomSubdomains,
+      //     attribution: '百度-自定义-清新蓝'
+      //   }
+      // },
+      // {
+      //   label: '黑夜',
+      //   value: 'Baidu_dark',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: BaiduConstomSubdomains,
+      //     attribution: '百度-自定义-黑夜'
+      //   }
+      // },
+      // {
+      //   label: '红色警戒',
+      //   value: 'Baidu_redalert',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: BaiduConstomSubdomains,
+      //     attribution: '百度-自定义-红色警戒'
+      //   }
+      // },
+      // {
+      //   label: '精简(仿google)',
+      //   value: 'Baidu_googlelite',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: BaiduConstomSubdomains,
+      //     attribution: '百度-自定义-精简'
+      //   }
+      // },
+      // {
+      //   label: '自然绿',
+      //   value: 'Baidu_grassgreen',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: BaiduConstomSubdomains,
+      //     attribution: '百度-自定义-自然绿'
+      //   }
+      // },
+      // {
+      //   label: '浪漫粉',
+      //   value: 'Baidu_pink',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: BaiduConstomSubdomains,
+      //     attribution: '百度-自定义-浪漫粉'
+      //   }
+      // },
+      // {
+      //   label: '青春绿',
+      //   value: 'Baidu_darkgreen',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: BaiduConstomSubdomains,
+      //     attribution: '百度-自定义-青春绿'
+      //   }
+      // },
+      // {
+      //   label: '清新蓝绿',
+      //   value: 'Baidu_bluish',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: BaiduConstomSubdomains,
+      //     attribution: '百度-自定义-清新蓝绿'
+      //   }
+      // },
+      // {
+      //   label: '高端灰',
+      //   value: 'Baidu_grayscale',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: BaiduConstomSubdomains,
+      //     attribution: '百度-自定义-高端灰'
+      //   }
+      // },
+      // {
+      //   label: '强边界',
+      //   value: 'Baidu_hardedge',
+      //   prejection: 'baidu',
+      //   exteral: {
+      //     subdomains: BaiduConstomSubdomains,
+      //     attribution: '百度-自定义-强边界'
+      //   }
+      // }
     ]
   },
   {
@@ -195,7 +189,7 @@ const mapList: MapListType[] = [
     children: [
       {
         label: '电子地图',
-        value: 'Normal',
+        value: 'Tencent_Normal',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: '腾讯-电子地图'
@@ -203,7 +197,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '卫星地图',
-        value: 'Satellite',
+        value: 'Tencent_Satellite',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: '腾讯-卫星地图'
@@ -211,7 +205,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '地形图',
-        value: 'Terrain',
+        value: 'Tencent_Terrain',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: '腾讯-地形图'
@@ -225,7 +219,7 @@ const mapList: MapListType[] = [
     children: [
       {
         label: '电子地图',
-        value: 'Normal',
+        value: 'Osm_Normal',
         prejection: 'EPSG:3857',
         exteral: {
           subdomains: ['a', 'b', 'c'],
@@ -234,7 +228,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '骑行图',
-        value: 'Bike',
+        value: 'Osm_Bike',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'OpenStreetMap-骑行图'
@@ -242,7 +236,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '交通图',
-        value: 'Transport',
+        value: 'Osm_Transport',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'OpenStreetMap-交通图'
@@ -250,7 +244,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '山地图',
-        value: 'Humanitarian',
+        value: 'Osm_Humanitarian',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'OpenStreetMap-山地图'
@@ -264,7 +258,7 @@ const mapList: MapListType[] = [
     children: [
       {
         label: '地图(白)',
-        value: 'Light',
+        value: 'CartoDb_Light',
         prejection: 'EPSG:3857',
 
         exteral: {
@@ -273,7 +267,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '地图(黑)',
-        value: 'Dark',
+        value: 'CartoDb_Dark',
         prejection: 'EPSG:3857',
 
         exteral: {
@@ -288,7 +282,7 @@ const mapList: MapListType[] = [
     children: [
       {
         label: '彩色',
-        value: 'Colour',
+        value: 'Geoq_Colour',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'ArcGIS-彩色'
@@ -296,7 +290,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '灰度',
-        value: 'Gray',
+        value: 'Geoq_Gray',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'ArcGIS-灰度'
@@ -304,7 +298,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '午夜蓝',
-        value: 'Midnightblue',
+        value: 'Geoq_Midnightblue',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'ArcGIS-午夜蓝'
@@ -318,7 +312,7 @@ const mapList: MapListType[] = [
     children: [
       {
         label: '普通',
-        value: 'Normal',
+        value: 'Tdt_Normal',
         prejection: 'EPSG:3857',
         exteral: {
           subdomains: ['0', '1', '2'],
@@ -327,7 +321,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '卫星',
-        value: 'Satellite',
+        value: 'Tdt_Satellite',
         prejection: 'EPSG:3857',
         exteral: {
           subdomains: ['0', '1', '2'],
@@ -336,7 +330,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '地形',
-        value: 'Terrain',
+        value: 'Tdt_Terrain',
         prejection: 'EPSG:3857',
         exteral: {
           subdomains: ['0', '1', '2'],
@@ -351,7 +345,7 @@ const mapList: MapListType[] = [
     children: [
       {
         label: '街景',
-        value: 'Streets',
+        value: 'Mapbox_Streets',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-街景'
@@ -359,7 +353,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '暗黑',
-        value: 'Dark',
+        value: 'Mapbox_Dark',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-暗黑'
@@ -367,7 +361,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '浅黑',
-        value: 'LightDark',
+        value: 'Mapbox_LightDark',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-浅黑'
@@ -375,7 +369,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '卫星',
-        value: 'Satellite',
+        value: 'Mapbox_Satellite',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-卫星'
@@ -383,7 +377,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '浅色',
-        value: 'Light',
+        value: 'Mapbox_Light',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-浅色'
@@ -391,7 +385,7 @@ const mapList: MapListType[] = [
       },
       {
         label: 'Emerald',
-        value: 'Emerald',
+        value: 'Mapbox_Emerald',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-Emerald'
@@ -399,7 +393,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '白色',
-        value: 'White',
+        value: 'Mapbox_White',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-白色'
@@ -407,7 +401,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '红色',
-        value: 'Red',
+        value: 'Mapbox_Red',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-红色'
@@ -415,7 +409,7 @@ const mapList: MapListType[] = [
       },
       {
         label: 'Outdoors',
-        value: 'Outdoors',
+        value: 'Mapbox_Outdoors',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-Outdoors'
@@ -423,7 +417,7 @@ const mapList: MapListType[] = [
       },
       {
         label: 'StreetsSatellite',
-        value: 'StreetsSatellite',
+        value: 'Mapbox_StreetsSatellite',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-StreetsSatellite'
@@ -431,7 +425,7 @@ const mapList: MapListType[] = [
       },
       {
         label: 'Comic',
-        value: 'Comic',
+        value: 'Mapbox_Comic',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-Comic'
@@ -439,7 +433,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '建筑',
-        value: 'Building',
+        value: 'Mapbox_Building',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Mapbox-建筑'
@@ -453,7 +447,7 @@ const mapList: MapListType[] = [
     children: [
       {
         label: '普通',
-        value: 'Normal',
+        value: 'Google_Normal',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Google-普通'
@@ -461,7 +455,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '卫星',
-        value: 'Satellite',
+        value: 'Google_Satellite',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Google-卫星'
@@ -469,7 +463,7 @@ const mapList: MapListType[] = [
       },
       {
         label: '卫星Label',
-        value: 'Satellite_Label',
+        value: 'Google_Satellite_Label',
         prejection: 'EPSG:3857',
         exteral: {
           attribution: 'Google-卫星Label'
