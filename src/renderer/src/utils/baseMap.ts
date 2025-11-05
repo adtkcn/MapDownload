@@ -151,7 +151,7 @@ export default class baseMap {
     }
   }
   // 添加geojson至地图
-  addGeometry(geojson, events = false, cb = () => {}) {
+  addGeometry(geojson, events = false, cb: (_Event) => void) {
     const geometry = maptalks.GeoJSON.toGeometry(geojson, (geo) => {
       const polygonStyle = {
         lineColor: '#34495e',

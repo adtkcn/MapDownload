@@ -103,18 +103,18 @@ export class TileTMSList {
       pictureType,
       imageType: this.imageType
     }
-
+    const tileGenerator = new TileGenerator(tileLayer)
+    const baiduTileGenerator = new BaiduTileGenerator(tileLayer)
     for (let z = zmin; z < zmax; z++) {
       let urls: { z: number; x: number; y: number; url: string }[] = []
+      console.time('getTileUrls')
 
       if (this.isBaidu === false) {
-        const tileGenerator = new TileGenerator(tileLayer)
         urls = tileGenerator.getTileUrls(this.extent, z)
       } else {
-        const tileGenerator = new BaiduTileGenerator(tileLayer)
-        urls = tileGenerator.getTileUrlsByBounds(this.extent, z)
+        urls = baiduTileGenerator.getTileUrlsByBounds(this.extent, z)
       }
-
+      console.timeEnd('getTileUrls')
       console.log(urls)
 
       for (const item of urls) {

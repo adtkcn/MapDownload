@@ -106,7 +106,8 @@ export function ipcHandle(win: BrowserWindow) {
       error: queueList.error, //错误总数
       success: queueList.success, //成功总数
       existNum: queueList.existNum, //已存在文件数
-      requestNum: queueList.requestNum
+      requestNum: queueList.requestNum, //并发数
+      retryNum: queueList.retryNum, //重试次数
     })
   }
   // superagent & sharp 下载图片

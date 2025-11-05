@@ -9,6 +9,7 @@ export class QueueList {
   error = 0 //错误总数
   success = 0 //成功总数
   existNum = 0 //已存在文件数
+  retryNum = 0 //重试次数
   requestNum = 0
 
   /**
@@ -44,10 +45,12 @@ export class QueueList {
     if (task.retry <= 0) {
       return
     }
+
     if (this.isRunning) {
+      this.retryNum++
       task.retry = task.retry - 1
       this.requestNum--
-      this.addTask(task)
+      this.list.push(task)
     }
   }
   private getFirstTask() {
@@ -80,7 +83,8 @@ export class QueueList {
     this.error = 0 //错误总数
     this.success = 0 //成功总数
     this.existNum = 0 //已存在文件数
-    this.requestNum = 0
+    this.requestNum = 0 //当前请求数
+    this.retryNum = 0 //重试次数
   }
   stop() {
     this.list = []

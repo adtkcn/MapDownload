@@ -23,6 +23,11 @@
       </span>
     </div>
     <div class="item">
+      重试数:<span>
+        {{ retryNum }}
+      </span>
+    </div>
+    <div class="item">
       并发数:<span>
         {{ requestNum }}
       </span>
@@ -47,7 +52,8 @@ export default defineComponent({
       existNum: 0, // 已存在文件数
       percentage: 0, // 下载进度百分比
       count: 0, // 下载总数
-      requestNum: 0 // 并发数
+      requestNum: 0, // 并发数
+      retryNum: 0 // 重试次数
     }
   },
   mounted() {
@@ -61,6 +67,7 @@ export default defineComponent({
       this.error = state.error
       this.existNum = state.existNum
       this.requestNum = state.requestNum
+      this.retryNum = state.retryNum
       this.percentage = ((state.success + state.error) / state.count) * 100
     })
   },

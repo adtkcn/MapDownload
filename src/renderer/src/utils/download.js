@@ -1,4 +1,3 @@
-
 /**
  * 下载单张瓦片
  * @param {object} tile 瓦片参数
@@ -16,12 +15,9 @@
 export function downloadImage(tile, downloadOption) {
   const savePath = `${downloadOption.downloadPath}${tile.z}\\${tile.x}\\${tile.y}${downloadOption.pictureType}`
   //  savePath示例：G:\\MapDownload\\18\\123456\\789012.png
-
   const param = { zoom: tile.z, url: tile.url, savePath, x: tile.x, y: tile.y }
-
   window.electron.ipcRenderer.send('save-image', param)
 }
-
 
 /**
  * 下载瓦片

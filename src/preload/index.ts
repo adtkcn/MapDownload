@@ -9,6 +9,7 @@ export const api = {
       success: number
       existNum: number
       requestNum: number
+      retryNum: number
     }) => void
   ) => {
     ipcRenderer.on('imageDownloadDone', (_event: Electron.IpcRendererEvent, data) => callback(data))
