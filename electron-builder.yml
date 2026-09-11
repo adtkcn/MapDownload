@@ -11,6 +11,7 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
+  - '**/out/main/downloadWorker.js'
 win:
   executableName: mapdownload2
 nsis:

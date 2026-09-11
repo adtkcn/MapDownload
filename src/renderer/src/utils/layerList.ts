@@ -19,8 +19,13 @@ export type MapLayerType = {
   exteral: {
     attribution: string
     subdomains?: number[] | string[]
+    /** 模板中没有 {s} 时，用这组主机名轮转，实现多域名并发 */
+    hosts?: string[]
   }
 }
+
+// 天地图模板里没有 {s} 占位符，改用主机名池做多域名轮转
+const TDT_HOSTS = ['0', '1', '2', '3', '4', '5', '6', '7'].map((i) => `t${i}.tianditu.gov.cn`)
 export type MapListType = {
   label: string
   value: MapType
@@ -316,6 +321,7 @@ const mapList: MapListType[] = [
         prejection: 'EPSG:3857',
         exteral: {
           subdomains: ['0', '1', '2'],
+          hosts: TDT_HOSTS,
           attribution: '天地图-普通地图'
         }
       },
@@ -325,6 +331,7 @@ const mapList: MapListType[] = [
         prejection: 'EPSG:3857',
         exteral: {
           subdomains: ['0', '1', '2'],
+          hosts: TDT_HOSTS,
           attribution: '天地图-卫星地图'
         }
       },
@@ -334,6 +341,7 @@ const mapList: MapListType[] = [
         prejection: 'EPSG:3857',
         exteral: {
           subdomains: ['0', '1', '2'],
+          hosts: TDT_HOSTS,
           attribution: '天地图-地形图'
         }
       }

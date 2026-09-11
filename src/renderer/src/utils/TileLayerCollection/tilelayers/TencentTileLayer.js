@@ -5,6 +5,8 @@ class TencentTileLayer extends BaseTileLayer {
   constructor(id, options = {}) {
     const style = options.style || 'Tencent_Normal'
     options.urlTemplate = params().Tencent[style].url
+    // 腾讯图层使用 TMS 翻转的 y，且模板含 {m} {n}，下载时需要走专用规则
+    options.urlRule = 'tencent'
     super(id, options)
   }
 

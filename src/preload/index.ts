@@ -1,18 +1,18 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import type { DownloadJob, DownloadProgress } from '../shared/downloadTypes'
 
 export const api = {
-  imageDownloadDone: (
-    callback: (state: {
-      count: number
-      error: number
-      success: number
-      existNum: number
-      requestNum: number
-      retryNum: number
-    }) => void
-  ) => {
-    ipcRenderer.on('imageDownloadDone', (_event: Electron.IpcRendererEvent, data) => callback(data))
+  /** 一次性下发整个下载任务，URL 生成与下载都在下载子进程内完成 */
+  downloadStart: (job: DownloadJob): Promise<{ ok: boolean }> =>
+    ipcRenderer.invoke('download:start', job),
+  downloadPause: (): void => ipcRenderer.send('download:pause'),
+  downloadResume: (): void => ipcRenderer.send('download:resume'),
+  downloadStop: (): void => ipcRenderer.send('download:stop'),
+  onDownloadProgress: (callback: (progress: DownloadProgress) => void): void => {
+    ipcRenderer.on('download:progress', (_event: Electron.IpcRendererEvent, data) =>
+      callback(data as DownloadProgress)
+    )
   }
 }
 

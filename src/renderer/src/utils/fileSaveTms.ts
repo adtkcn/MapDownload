@@ -1,127 +1,83 @@
-// import { useMessage } from 'naive-ui'
-
 import type * as MaptalksType from 'maptalks/src/index.ts'
 import type { saveParam } from '../components/types'
-import { downloadImage } from './download'
-import { TileGenerator, BaiduTileGenerator } from './genUrl'
-/**
- * 下载TMS瓦片
- */
-// export class TileTMS {
-//   rootPath: string
-//   maxZoom: number
-//   minZoom: number
-//   imageType: string
-//   extent: number[]
-//   tileLayer: MaptalksType.TileLayer
+import type { DownloadJob, TileSource, TileUrlRule } from '@shared/downloadTypes'
 
-//   constructor(data: saveParam) {
-//     this.rootPath = data.savePath // 文件根目录
-//     this.maxZoom = data.maxZoom
-//     this.minZoom = data.minZoom
-//     this.imageType = data.imageType
-//     this.tileLayer = data.mapConfig.tileLayer as MaptalksType.TileLayer
-//     this.extent = [data.extent.xmin, data.extent.ymin, data.extent.xmax, data.extent.ymax]
+/** 总并发请求数 */
+const DEFAULT_CONCURRENCY = 32
+/** 同时写盘的文件数 */
+const DEFAULT_WRITE_CONCURRENCY = 16
+/** 每个域名的最大并发连接数 */
+const DEFAULT_SOCKETS_PER_HOST = 16
+const DEFAULT_TIMEOUT = 20_000
+const DEFAULT_MAX_RETRY = 3
 
-//     //  this.tileLayer.getMap()
-//     this.downloadTiles()
-//   }
-//   async downloadTiles() {
-//     //
-//     const mapStyle = this.tileLayer._id
-
-//     // 当前绝对路径
-//     const downloadPath = this.rootPath + '\\' + mapStyle + '\\'
-//     // 下载范围
-//     const zmin = this.minZoom
-//     const zmax = this.maxZoom + 1
-//     const pictureType = '.' + this.imageType
-//     // 遍历下载
-//     const option = {
-//       downloadPath,
-//       pictureType,
-//       imageType: this.imageType
-//     }
-
-//     for (let z = zmin; z < zmax; z++) {
-//       const urls = getGaodeTileUrls(this.tileLayer, this.extent, z)
-//       console.log(urls)
-
-//       for (const item of urls) {
-//         downloadImage(item, option)
-//       }
-//     }
-//   }
-// }
+type LayerOptions = {
+  urlTemplate?: string
+  subdomains?: Array<string | number>
+  hosts?: string[]
+  customTags?: Record<string, string | number>
+  /** 'tencent' 表示需要 TMS 翻转并处理 {m} {n} */
+  urlRule?: string
+}
 
 /**
- * 下载TMS瓦片集合
+ * 下载 TMS 瓦片集合
+ *
+ * 这里只负责把「范围 + URL 模板」一次性下发给主进程，
+ * 具体的瓦片范围计算与 URL 生成都在下载子进程里完成，
+ * 避免为每个瓦片做一次跨进程通信。
  */
 export class TileTMSList {
-  rootPath: string
-  maxZoom: number
-  minZoom: number
-  extent: number[]
-  imageType: string
-  tileLayer: Array<MaptalksType.TileLayer>
-  isBaidu: boolean
-
   constructor(data: saveParam) {
-    this.rootPath = data.savePath // 文件根目录
-    this.maxZoom = data.maxZoom
-    this.minZoom = data.minZoom
-    this.imageType = data.imageType
-    this.tileLayer = data.mapConfig.tileLayer as Array<MaptalksType.TileLayer>
-    this.extent = [data.extent.xmin, data.extent.ymin, data.extent.xmax, data.extent.ymax]
-    const projection = data.mapConfig.projection.code
-    if (projection === 'BAIDU') {
-      this.isBaidu = true
-    } else {
-      this.isBaidu = false
-    }
-
-    this.downloadLayers()
+    this.download(data)
   }
-  async downloadLayers() {
-    for (let index = 0; index < this.tileLayer.length; index++) {
-      const layer = this.tileLayer[index]
-      await this.downloadTiles(layer)
+
+  private download(data: saveParam): void {
+    const projection = data.mapConfig.projection?.code ?? 'EPSG:3857'
+    const sources = (data.mapConfig.tileLayer ?? [])
+      .map((layer) => toTileSource(layer, projection))
+      .filter((source) => source.urlRule.template.length > 0)
+
+    if (sources.length === 0) {
+      console.warn('没有可下载的图层，请检查图层配置')
+      return
     }
 
-    // window.$message.success('瓦片数据下载完成。')
+    const job: DownloadJob = {
+      jobId: `job-${Date.now()}`,
+      rootPath: data.savePath,
+      sources,
+      extent: [data.extent.xmin, data.extent.ymin, data.extent.xmax, data.extent.ymax],
+      zMin: data.minZoom,
+      zMax: data.maxZoom,
+      imageType: data.imageType,
+      concurrency: DEFAULT_CONCURRENCY,
+      writeConcurrency: DEFAULT_WRITE_CONCURRENCY,
+      maxRetry: DEFAULT_MAX_RETRY,
+      skipExist: true,
+      socketsPerHost: DEFAULT_SOCKETS_PER_HOST,
+      timeoutMs: DEFAULT_TIMEOUT
+    }
+
+    void window.api.downloadStart(job)
   }
-  async downloadTiles(tileLayer: MaptalksType.TileLayer) {
-    // 当前绝对路径
-    const downloadPath = this.rootPath + '\\' + tileLayer._id + '\\'
-    // 下载范围
-    const zmin = this.minZoom
-    const zmax = this.maxZoom + 1
-    const pictureType = '.' + this.imageType
-    // 遍历下载
-    const option = {
-      downloadPath,
-      pictureType,
-      imageType: this.imageType
-    }
-    const tileGenerator = new TileGenerator(tileLayer)
-    const baiduTileGenerator = new BaiduTileGenerator(tileLayer)
-    for (let z = zmin; z < zmax; z++) {
-      let urls: { z: number; x: number; y: number; url: string }[] = []
-      console.time('getTileUrls')
+}
 
-      if (this.isBaidu === false) {
-        urls = tileGenerator.getTileUrls(this.extent, z)
-      } else {
-        urls = baiduTileGenerator.getTileUrlsByBounds(this.extent, z)
-      }
-      console.timeEnd('getTileUrls')
-      console.log(urls)
+function toTileSource(layer: MaptalksType.Layer, projection: string): TileSource {
+  const raw = layer as unknown as { _id?: string; options?: LayerOptions }
+  const options = raw.options ?? {}
 
-      for (const item of urls) {
-        downloadImage(item, option)
-      }
-      // await tileLayer.downloadCascadeTiles(z, option)
-    }
-    return Promise.resolve()
+  const rule: TileUrlRule = {
+    template: options.urlTemplate ?? '',
+    subdomains: options.subdomains ?? [],
+    hosts: options.hosts,
+    flipY: options.urlRule === 'tencent',
+    customTags: options.customTags
+  }
+
+  return {
+    layerId: raw._id ?? 'tiles',
+    projection,
+    urlRule: rule
   }
 }
