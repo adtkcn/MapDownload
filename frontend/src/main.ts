@@ -1,0 +1,7 @@
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import './style/index.scss'
+import naive from './naive-ui-load'
+
+createApp(App).use(router).use(naive).mount('#app')

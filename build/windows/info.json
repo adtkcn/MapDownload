@@ -1,0 +1,15 @@
+{
+	"fixed": {
+		"file_version": "0.1.0"
+	},
+	"info": {
+		"0000": {
+			"ProductVersion": "0.1.0",
+			"CompanyName": "mapdownload",
+			"FileDescription": "地图瓦片下载工具",
+			"LegalCopyright": "(c) 2026 mapdownload",
+			"ProductName": "地图下载",
+			"Comments": "地图瓦片下载工具"
+		}
+	}
+}

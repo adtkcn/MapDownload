@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=地图下载
+Comment=地图瓦片下载工具
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/map %u
+Terminal=false
+Type=Application
+Icon=map
+Categories=Utility;
+StartupWMClass=map
+
+ 
