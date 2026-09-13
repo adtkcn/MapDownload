@@ -3,11 +3,11 @@ import type { saveParam } from '../components/types'
 import type { DownloadJob, TileSource, TileUrlRule } from '@shared/downloadTypes'
 
 /** 总并发请求数 */
-const DEFAULT_CONCURRENCY = 32
+const DEFAULT_CONCURRENCY = 48
 /** 同时写盘的文件数 */
-const DEFAULT_WRITE_CONCURRENCY = 16
-/** 每个域名的最大并发连接数 */
-const DEFAULT_SOCKETS_PER_HOST = 16
+const DEFAULT_WRITE_CONCURRENCY = 24
+/** 每个域名的最大连接数上限，实际值由下载引擎按域名数分摊 */
+const DEFAULT_SOCKETS_PER_HOST = 32
 const DEFAULT_TIMEOUT = 20_000
 const DEFAULT_MAX_RETRY = 3
 

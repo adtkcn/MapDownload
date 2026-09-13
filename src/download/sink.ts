@@ -5,18 +5,24 @@ import { Transform } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import type { IncomingMessage } from 'node:http'
 
-/** 目录级已存在文件缓存的上限，防止长时间任务内存无限增长 */
-const MAX_CACHED_DIRS = 512
+type ColumnEntry = {
+  /** 该列已存在的文件名集合 */
+  files: Set<string> | null
+  /** 正在读取中，同列的其他分片复用这一次 readdir */
+  loading: Promise<Set<string>> | null
+  /** 正在使用该列的分片数量 */
+  refs: number
+}
 
 /**
  * 文件落盘
  *
  * 全部走异步 API，避免在事件循环里执行同步 stat / mkdir 把网络回调拖住。
- * 目录创建与"文件是否已存在"都按目录维度缓存，一列瓦片只做一次 readdir。
+ * 目录创建与"文件是否已存在"都按列维度缓存，一列瓦片只做一次 readdir。
  */
 export class FileSink {
   private readonly dirCache = new Set<string>()
-  private readonly existCache = new Map<string, Set<string>>()
+  private readonly columns = new Map<string, ColumnEntry>()
   private activeWrites = 0
   private readonly waiters: Array<() => void> = []
 
@@ -28,25 +34,38 @@ export class FileSink {
     this.dirCache.add(dir)
   }
 
-  /** 读取某个瓦片列目录下已存在的文件名，同列内只读取一次 */
-  async columnExists(dir: string): Promise<Set<string>> {
-    const cached = this.existCache.get(dir)
-    if (cached) return cached
-
-    let names: string[] = []
-    try {
-      names = await readdir(dir)
-    } catch {
-      names = []
+  /**
+   * 取得某个瓦片列已存在的文件集合。
+   *
+   * 同一列的多个分片共享这一次 readdir：第一个到达的分片触发读取，
+   * 其余分片复用同一个 Promise；引用计数归零后释放，避免长任务内存堆积。
+   */
+  async acquireColumn(dir: string): Promise<Set<string>> {
+    let entry = this.columns.get(dir)
+    if (!entry) {
+      entry = { files: null, loading: null, refs: 0 }
+      this.columns.set(dir, entry)
     }
-    const set = new Set(names)
-    this.trackCache(dir, set)
-    return set
+    entry.refs++
+
+    if (entry.files) return entry.files
+    if (!entry.loading) {
+      const current = entry
+      entry.loading = readDirNames(dir).then((files) => {
+        current.files = files
+        current.loading = null
+        return files
+      })
+    }
+    return entry.loading
   }
 
-  /** 一个瓦片列处理完毕后释放其缓存 */
-  endColumn(dir: string): void {
-    this.existCache.delete(dir)
+  /** 分片处理完毕后归还列缓存 */
+  releaseColumn(dir: string): void {
+    const entry = this.columns.get(dir)
+    if (!entry) return
+    entry.refs--
+    if (entry.refs <= 0) this.columns.delete(dir)
   }
 
   /**
@@ -67,9 +86,8 @@ export class FileSink {
       await pipeline(res, counter, createWriteStream(tmp))
       await rename(tmp, dest)
 
-      const dir = dirname(dest)
-      const cached = this.existCache.get(dir)
-      if (cached) cached.add(basename(dest))
+      const entry = this.columns.get(dirname(dest))
+      if (entry?.files) entry.files.add(basename(dest))
 
       return bytes
     } catch (error) {
@@ -78,14 +96,6 @@ export class FileSink {
     } finally {
       this.release()
     }
-  }
-
-  private trackCache(dir: string, set: Set<string>): void {
-    if (this.existCache.size >= MAX_CACHED_DIRS) {
-      const oldest = this.existCache.keys().next().value
-      if (oldest !== undefined) this.existCache.delete(oldest)
-    }
-    this.existCache.set(dir, set)
   }
 
   private async acquire(): Promise<void> {
@@ -101,5 +111,13 @@ export class FileSink {
     this.activeWrites--
     const waiter = this.waiters.shift()
     if (waiter) waiter()
+  }
+}
+
+async function readDirNames(dir: string): Promise<Set<string>> {
+  try {
+    return new Set(await readdir(dir))
+  } catch {
+    return new Set()
   }
 }

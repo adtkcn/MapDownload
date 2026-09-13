@@ -5,7 +5,8 @@ import type {
   DownloadJob,
   DownloadProgress,
   ProgressState,
-  TileSource
+  TileSource,
+  TileUrlRule
 } from '../shared/downloadTypes'
 import {
   createAgents,
@@ -17,8 +18,18 @@ import {
 import { requestTile } from './fetchStream'
 import { FileSink } from './sink'
 
-/** 每个分片包含的瓦片行数，控制分片粒度 */
-const ROWS_PER_SHARD = 256
+/** 列数不足以喂满并发时的分片粒度 */
+const FALLBACK_ROWS_PER_SHARD = 256
+/**
+ * 列数充足时的分片粒度。
+ * 短列（绝大多数）本来就是整列一个分片；超长列必须拆分，
+ * 否则单个 worker 要串行跑完上千片，末尾只剩几个长列时并发会塌掉。
+ */
+const MAX_ROWS_PER_SHARD = 512
+/** 分片总数达到并发数的这个倍数时，认为负载均衡已经足够 */
+const SHARDS_PER_WORKER = 4
+/** 每个域名的最小连接数 */
+const MIN_SOCKETS_PER_HOST = 8
 /** 进度回推间隔（毫秒），避免每个瓦片都推送一次 */
 const PROGRESS_INTERVAL = 250
 
@@ -81,7 +92,7 @@ export class DownloadEngine {
     this.resetStats()
     this.stats.total = countTiles(job)
 
-    this.agents = createAgents({ socketsPerHost: job.socketsPerHost })
+    this.agents = createAgents({ socketsPerHost: resolveSocketsPerHost(job) })
     this.sink = new FileSink(job.writeConcurrency)
     this.controller = new AbortController()
 
@@ -132,21 +143,32 @@ export class DownloadEngine {
 
   // ---------------- 调度 ----------------
 
+  /**
+   * 决定分片粒度：列数充足时短列就是完整一列（共享缓存保证每列只 readdir 一次），
+   * 但列长超过 MAX_ROWS_PER_SHARD 仍要拆分，避免长尾拖慢整体。
+   */
+  private planRowsPerShard(job: DownloadJob): number {
+    const columns = countColumns(job)
+    const workers = Math.max(1, job.concurrency)
+    return columns >= workers * SHARDS_PER_WORKER ? MAX_ROWS_PER_SHARD : FALLBACK_ROWS_PER_SHARD
+  }
+
   private *shards(job: DownloadJob): Generator<Shard> {
+    const rowsPerShard = this.planRowsPerShard(job)
     for (const source of job.sources) {
       const layerDir = join(job.rootPath, safeDirName(source.layerId))
       const isBaidu = isBaiduProjection(source.projection)
       for (let z = job.zMin; z <= job.zMax; z++) {
         const bounds = tileBounds(job.extent, z, isBaidu)
         for (let x = bounds.x0; x <= bounds.x1; x++) {
-          for (let y = bounds.y0; y <= bounds.y1; y += ROWS_PER_SHARD) {
+          for (let y = bounds.y0; y <= bounds.y1; y += rowsPerShard) {
             yield {
               source,
               layerDir,
               z,
               x,
               y0: y,
-              y1: Math.min(y + ROWS_PER_SHARD - 1, bounds.y1)
+              y1: Math.min(y + rowsPerShard - 1, bounds.y1)
             }
           }
         }
@@ -173,25 +195,27 @@ export class DownloadEngine {
     this.currentLayer = shard.source.layerId
     const dir = join(shard.layerDir, String(shard.z), String(shard.x))
     await sink.ensureDir(dir)
-    const existing = job.skipExist ? await sink.columnExists(dir) : null
+    const existing = job.skipExist ? await sink.acquireColumn(dir) : null
     const suffix = `.${job.imageType}`
 
-    for (let y = shard.y0; y <= shard.y1; y++) {
-      if (this.stopped) break
-      if (this.paused) {
-        await this.waitResume()
+    try {
+      for (let y = shard.y0; y <= shard.y1; y++) {
         if (this.stopped) break
-      }
+        if (this.paused) {
+          await this.waitResume()
+          if (this.stopped) break
+        }
 
-      const name = `${y}${suffix}`
-      if (existing && existing.has(name)) {
-        this.stats.skipped++
-        continue
+        const name = `${y}${suffix}`
+        if (existing && existing.has(name)) {
+          this.stats.skipped++
+          continue
+        }
+        await this.downloadOne(job, shard, y, join(dir, name))
       }
-      await this.downloadOne(job, shard, y, join(dir, name))
+    } finally {
+      if (existing) sink.releaseColumn(dir)
     }
-
-    sink.endColumn(dir)
   }
 
   private async downloadOne(
@@ -315,6 +339,38 @@ function countTiles(job: DownloadJob): number {
     }
   }
   return total
+}
+
+/** 图层可用的域名数量：主机池优先，其次是 {s} 子域名 */
+function hostCountOf(rule: TileUrlRule): number {
+  const hosts = rule.hosts?.length ?? 0
+  const subs = rule.subdomains?.length ?? 0
+  return Math.max(1, hosts || subs)
+}
+
+/**
+ * 按域名数分摊并发连接数。
+ *
+ * Node 的 maxSockets 是 per host，单域名源若固定为 16，
+ * 实际并发就被锁死在 16，多出来的 worker 全部空转。
+ */
+function resolveSocketsPerHost(job: DownloadJob): number {
+  const hostCount = Math.max(1, ...job.sources.map((source) => hostCountOf(source.urlRule)))
+  const perHost = Math.ceil(job.concurrency / hostCount)
+  return Math.max(MIN_SOCKETS_PER_HOST, Math.min(job.socketsPerHost, perHost))
+}
+
+/** 预估总列数，用于决定分片粒度 */
+function countColumns(job: DownloadJob): number {
+  let columns = 0
+  for (const source of job.sources) {
+    const isBaidu = isBaiduProjection(source.projection)
+    for (let z = job.zMin; z <= job.zMax; z++) {
+      const bounds = tileBounds(job.extent, z, isBaidu)
+      columns += Math.max(0, bounds.x1 - bounds.x0 + 1)
+    }
+  }
+  return columns
 }
 
 function backoffDelay(attempt: number): number {
